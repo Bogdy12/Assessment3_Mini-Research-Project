@@ -3,24 +3,24 @@ title: "There is any relation between unemployment rates and socio-economic indi
 author: "Bogdan Rugina"
 date: "12 December 2018"
 output:
-  html_document: default
   word_document: default
+  html_document: default
 ---
 
 
 
 ## Introduction   
 
-####This study intends to understand the extent of socio-economic indicators as primary education, higher education, income and their relationships to unemployment rate in the London area as of 2011. After pre-analysing the data for possible skewed distributions and correlation between variables, a multiple linear regression is performed in order to test the statistical significance of the findings.The final output of this reasearch will consist on local regression predicting to which extent the above mentioned social indicators influence the unemployment rate in London LSO areas in 2011. The inspiration for this research comes from an international project called "INEQ-CITIES" which main aim was to provide evidences of health inequalties in cities across Europe (https://www.ucl.ac.uk/ineqcities). Different pubblications followed the project, interesting for this study, Borrell et al (2014) enphasise "a consistent pattern of socio-economic inqualities in mortality" in Europe emerging from socio-economic indicators such as unemployment and education levels. Similarly in this study the main objective is to identify to which extent education and median income of each Loandon small areas contribute to unmeployment for the year 2011.
-####The first part relates to inferential statistic analysis, in particular a bi-variate linear regression will be perfomed and based on first results other indicators will be inserted one by one into a multiple regression model.
-####The second part will consist on a geographical weighted regression (GWR) perfomed in order to visualize local aspects of the multiple regression,some predictions will be inspected as part of the overall objective.
+####Urban unemployment rates seem to be shaped by different social problems that are nested behind poverty, ghettos and segregation (Zenou, 2000). The advantages of educated workers are the subject of an immense literature and could be translated in higher wages, greater mobility and employment stability (Mincer, 1991). Higher education among workers leads under this light to lower rate of unemployment, which results to human capital accumulation and high productivity (Nickell, 1979).
+####In this study the main objective is to identify to which extent different levels of education and median income of each London small areas contribute to unemployment for the year 2011. The first part relates to the inferential statistical analysis, developed on R environment, starting with a bi-variate linear regression and based on first results other indicators will be inserted one by one into a multiple regression model. The second part will consist on a geographical weighted regression (GWR) performed on ArcGIS software in order to visualize local aspects of the multiple regression model, some predictions will be inspected as part of the overall objective.
 
 
 
+## Data   
 
-##Data   
+####Data used to develop this research comes entirely from the UK Office for National Statistics, it refers to the London Lower Super Output Areas (LSOA) which are smallest geographically statistic areas containing data from the official 2011 census (OSN, 2018). The London Datastore website releases as well the ONS based “LSOA Atlas”" which “provides summary of demographic” and other related data from population segmentation to housing, land use, employment, etc. (London Datastore, 2018). In this study the London LSOA Atlas will be the direct source of data for the following analysis, the extracted values of interest are shown in Figure 1.
 
-####The material used to develop this research comes interely from the UK Office for National Statistics (OSN https://www.ons.gov.uk/search?:uri=search&:uri=search&q=LSOA&page=3) and in particularly refers to the London Lower Super Output Areas (LSOA) which are smallest geographically statistic areas containing data from the offical census of 2011(https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography#super-output-area-soa). The London Datastore website releases as well the ONS based "LSOA Atlas"" which "provides summary of demographic" and other retaled data from population segmentation to housing, land use, employment, etc. In this study the London LSOA Atlas will be the direct source of data for the following analysis, the extracted values of interest are shown in the table bellow.
+####Figure 1. London Datastore data
 ```{r}
 library(readr)
 clean_data <-read_csv("C:\\Users\\Bogdan\\Documents\\UCL\\MRes\\GIS\\week9\\Assignment3\\clean_data.csv")
@@ -28,27 +28,17 @@ head(clean_data)
 
 ```
 
+#### As a further step, social data extracted from the LSOA Atlas will be subjected to normalization, each variable will be divided by the working-age population resulting in 3 socio-economic indicators: primary education, higher education and median household income.
 
 
-##Methodology
+#### The first set of variables to be extracted from the databased are the “Unemployment Rates” that accordingly to the OSN are calculated as the total number of unemployed people divided by the active population (ONS, 2018). Unemployment rates will represent in this study the dependent value based on which all the indicators will be related. Primary education and higher education indicators were calculated respectively as the working aged population between 16-65 that completed the first level of qualification or lower (summing unqualified population and level 1 education) from one side and the working population who obtained level 4 qualifications and above from the other, both were then divided by the total population aged 16-25. Finally, the fourth variable resulted from the household median income annual estimates for the year 2011-2012 and divided by the working aged population. Median values were chose instead of mean ones, due to the fact that eventual outliers may raise the mean values in the social context of London.
 
 
-####Data extracted from the LSOA Atlas has been subject to transformation, as the socio-economic indicators are the results of normalization with the working age population.The next step involved regression analysis
-
-##[INSERT THE CALCULATION TABLE]
-
-
-
-### Data transformation
-
-####The first set of variables to be extracted from the databased are the "Unemployment Rates" that accordingly to the OSN are calculated as the the total number of unemployed people divided by the active population(https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/methodologies/aguidetolabourmarketstatistics). Unemployment rates will represent in this study the dependent value based on which all the indicators will be related.
-####Primary education and higher education indicators were calculated respectively as the working aged population between 16-65 that completed the first level of qualification or lower (summing unqualified population and level 1 education) from one side and the working population who obtained level 4 qualifications and above from the other, both were then divided by the total population aged 16-25.
-#### Finally the fourth variable resulted from the household median income annual estimates for the year 2011-2012 and divided by the working aged population. Median values were chose instead of mean ones, due to the fact that eventual outliers may raise the mean values in the social context as that of London.
-####The following table illustrates the indicators calculated values that will be examined in depth in the next paragraphs.
+#### Figure 3. Social indicators 
 
 ```{r}
 ## A new object called "social_indicators"" will contain the indicators
-
+social_indicators <- clean_data
 # First we sum the two primary education levels:
 social_indicators$Primary_education <- clean_data$No_qualifications+clean_data$Level_1_qualifications
 
@@ -61,22 +51,24 @@ social_indicators$Higher_education_Indicator <- clean_data$Level_4_qualification
 # Income indicator finally
 social_indicators$Median_income_Indicator <- clean_data$Med_Househ_Inc_estim/clean_data$Working_age_population
 
-head( social_indicators[,c(1:3, 10:12)])
+head(social_indicators[,c(1:3, 10:12)])
 ```
 
 
 
 
-####In order to have a first view of how the four variables are distributed, some basic statistics were visualized followed by the density distribution plots. The quick statistics show that unemployment rate has a mean value of 7.4% in the whole London area, working population is represented by 33% of unqualified individuals and higher education covers only 43% of the working-age population. 
+####In order to have a first view of how the four variables are distributed, some basic statistics were calculated in Figure 5, respectively density distribution in Figure 4 and box plots in Figure 6a and 6b. The quick statistics show that unemployment rate has a mean value of 7.4% in the whole London area, working population is represented by 33% of unqualified individuals and higher education covers only 43% of the working-age population.
 
-
+#### Figure 5. Statistic summary 
 ```{r}
 summary(social_indicators[,c(1:3, 10:12)])
 ```
 
 
-####Median household income indicator shows a mean value of 31.8, this indicates that in London the divergence between economically rich and poor LSOA areas is very large, density distribution and box plots identifies also a skewed conformation and an important range of outliers, in this case a log10 transformation seems to be a right manovre.
+####Median household income indicator shows a mean value of 31.8, this indicates that in London the divergence between economically rich and poor LSOA areas is very large, density distribution and box plots identify also a skewed conformation and an important range of outliers, in this case a log10 transformation seems to be a right maneuver.
 
+
+#### Figure 6a. Unemployment rates and median households income boxplots
 
 ```{r}
 
@@ -90,10 +82,24 @@ boxplot(D1,I4, vertical=TRUE,names = c( "Unemployment Rate","Income Indicator"),
 
 
 ```
+
+
+```{r}
+
+social_indicators$Median_Incom_LOG10 <- log10(social_indicators$Median_income_Indicator)
+boxplot(social_indicators$Median_Incom_LOG10, vertical=TRUE, name = c("Income Indicator"), col="gold", main="LOG10 Income Indicator" )
+
+```
+
+
+
+#### Figure 6b. Primary education and Higher education boxplots
+
 ```{r}
 boxplot(I2,I3, vertical=TRUE, names = c( "Primary Education","Higher Education"), col="gold", main="Education indicators" )
 ```
 
+#### Figure 4. Density distribution among the socio-economic indicators
 
 ```{r}
 
@@ -120,17 +126,15 @@ hist_All + facet_wrap(~ variable, scales="free")
 ```
 
 
-```{r}
-
-social_indicators$Median_Incom_LOG10 <- log10(social_indicators$Median_income_Indicator)
-boxplot(social_indicators$Median_Incom_LOG10, vertical=TRUE, name = c("Income Indicator"), col="gold", main="LOG10 Income Indicator" )
-
-```
 
 
 
-### Data analysis
-####Once cleaned and trasformed, data are ready to be analysed for bi-variate and multi-linear regression. The following tables shows the final input data.
+## Analysis
+####This study intends to understand the extent of socio-economic indicators as primary education, higher education, median households’ income and their relationships to unemployment rate in the London area for the year 2011. After pre-analyzing the data for possible skewed distributions and correlation between variables, a multiple linear regression is performed in order to test statistical significance of the findings.
+#### The final output of this research will consist on local regression predicting to which extent social indicators influence the unemployment rate in London Lower Super-Output Areas (LSOA) in 2011. The inspiration for this research comes from an international project called “INEQ-CITIES” which main aim was to provide evidences of health inequalities in cities across Europe (INEQ-CITIES, 2018 ). Different publications followed the project, interesting for this study, Borrell et al (2014) emphasize “a consistent pattern of socio-economic inequalities in mortality” in Europe emerging from socio-economic indicators such as unemployment and education levels. 
+#### Once cleaned and transformed, data in Figure 7 are ready to be analyzed as follow: first simple linear regression will be performed in order to inspect relation between unemployment and primary education indicator
+
+#### Figure 7. Final input data
 
 ```{r}
 
@@ -138,8 +142,9 @@ analysis_indicators <- social_indicators [,c(3, 10:11, 13)]
 head(analysis_indicators)
 ```
 
-####As a final step towards regression analysis, Pearson's correlation shows there is an evident positive correlation of 0.47 between unemployment and primary education, higher education and income from the other side are negatively corelated between -0,61 and -0.69, meaning they contribute in droping down the unemployment.
+####As an intermediate step towards regression analysis, Pearson’s correlation shows there is an evident positive correlation of 0.47 between unemployment and primary education, higher education and income from the other side are negatively corelated between -0,61 and -0.69, meaning they contribute in dropping down the unemployment.
 
+#### Figure 8. Pearson’s Correlation matrix 
 ```{r}
 
 library(corrplot)
@@ -149,32 +154,20 @@ corrplot(cormat)
 ```
 
 
-### Hypothesis
 
 
-####Taking into consideration the unemployment rates of London LSOA areas in 2011, as the unemployed working-aged population normalized by the total active population,the proposed analysis implies that the null hypothesis:
+####Taking into consideration the unemployment rates of London LSOA areas in 2011, as the unemployed working-age population normalized by the total active population, the proposed analysis implies the null hypothesis:
+#### H0: There is no statistically significant relation between unemployment rates and socio-economic indicators with significance level a >=0.05 and coefficients β1 = β2 = β3 = 0
+#### and the alternative hypothesis:
+#### H1: There is relationship between unemployment with significance level a<=0,05 and at least one of the coefficients {β1, β2, β3} ≠ 0.
+#### The analysis intents to prove that socio-economic indicators influence unemployment in the London area. The regression model used for this study consists on the following equations: 
+#### -	simple regression	 y = β1x1 + β0
+#### -	multiple regression	 y = β1x1 + β2x2 +…+ βkxk+ β0,
+#### where β are the gradients and β0 the intersect of the variables.
+#### From the results in Figure 10.  is evident that in terms of R-squared, relations between variables are explained on average only in 22% of the cases. P-values are strong enough to ensure the statistical significance. Beta coefficient has a positive value of 12.2, meaning each time we increase the primary education indicator by one unit, the unemployment rate will rise on average by 12.2%, in this case the model equation has the following coefficients:
+#### y = 12.2(x) + 3.29
 
-  #### H0: There is no statistically significant relation between unemployment rates and socio-economic indicators with significance level a >=0.05 and coefficients β1 = β2 = β3 = 0
-  
-####and the alternative hypothesys:
-  #### H1: There is relationship between unemployment with significance level  a<=0,05 and at least one of the coefficients {β1 ,  β2 , 	β3 } ≠ 0
-  
-
-
-###Regression models analysis
-
-####The analysis intents to prove that socio-economic indicators influence unemployment in the London area, first a simple linear regression is perfomed between unemployment rate and primary education indicator, then one by one higher education and median income will contribute to the multi-linear regression.
-####The regression model used for this study consists on the following equations :
-####   simple regression y = β1x1  + β0
-####   multiple regression y = β1x1 + β2x2 +…+ βkxk+ β0, 
-#### where β are the gradients and β0  the intersect of the variables. 
-
-### Bi-variate regression model
- 
-####From the results is evident that in terms of R-squared, relations between variables are explained on average only in 22% of the cases. Beta coeficient has a positive value of 12.2, meaning each time we increase the primary education indicator by one unit, the unemployment rate will rise on average by 12.2%, in this case the model equation has the following coefficients:
-####  y = 12.2(x)  + 3.29.
-
-
+#### Figure 9. Linear regression - Primary education indicator vs Unemployment rate in LSOA
 
 ```{r}
 qplot(Unemployment_Rate, 
@@ -189,20 +182,24 @@ qplot(Unemployment_Rate,
               size=1)
 ```
 
-
+#### Figure10. Coefficients analysis – Single linear regression
 ```{r}
 
-Bi_variate_model <- lm(indicators$Unemployment_Rate ~ indicators$Primary_education_Indicator)
+
+Bi_variate_model <- lm(analysis_indicators$Unemployment_Rate ~ analysis_indicators$Primary_education_Indicator)
 summary(Bi_variate_model)
+
+
 ```
 
 
-### Multi-linear regression model
 
-#### The next investigation consists on adding the higher education variable to the model that now shows a strong increase, peaking almost 40% of the variation in unemployment rates. The coefficients indicate a negative value of -6.41 for primary education and -17.18 for higher education, meaning that in this model both contribute on bringing down the unemployment:
-####  y = -6.41(x) - 17.18(x) + 17.04
-####  The three variables are plotted on a 3D graph in order facilitate the thier interpretations.The 3D regression model shows clearly the plane in incleaned when higher education rises, meaning more qualified workers in the system, less unemployment rates.
+#### The next investigation consists on adding the higher education variable to the model that now shows a strong increase, peaking almost 40% of variation in unemployment rates (Figure 12). The coefficients indicate a negative value of -6.41 for primary education and -17.18 for higher education, meaning that in this model both contribute on bringing down the unemployment:
+#### y = -6.41(x) - 17.18(x) + 17.04
 
+#### The three variables are plotted on a 3D graph in order to facilitate their interpretation. The 3D regression model in Figure 11 shows clearly that the predicted plane is inclined when higher education rises, meaning that more qualified workers are in the system, less unemployment rates would be registered.
+
+#### Figure 11. 3D Multilinear regression
 ```{r}
 
 ## 3D Plot
@@ -245,33 +242,37 @@ scatter3D(x, y, z, pch = 20, angle=45, cex = 0.1,
 
 ```
 
+#### Figure 12. Coefficients analysis – Multiple linear regression
 ```{r}
 
-Multi_model2 <- lm(indicators$Unemployment_Rate ~ indicators$Primary_education_Indicator + indicators$Higher_education_Indicator)
+Multi_model2 <- lm(analysis_indicators$Unemployment_Rate ~ analysis_indicators$Primary_education_Indicator + analysis_indicators$Higher_education_Indicator)
 summary(Multi_model2)
 ```
 
-#### The final regression model comprises all variables and demonstrates an additional increase to the R-squared values treflecting 54% of fit goodness on variables. All three variables have statistical significance near to 100% as the p-value is well bellow the significance border for which a=0.05. The null hypothesis is rejected as all coefficients are different from zero and the alternative hypothesis is accepted:
-####  y = 4.59(x) - 2.39(x) -12.14(x) + 24.81
+#### The final regression model comprises all variables and demonstrates an additional increase to the R-squared values reflecting 54% of fit goodness on variables. All three variables have statistical significance near to 100% as the p-value is well below the significance border for which a=0.05. The null hypothesis is rejected as all coefficients are different from zero and the alternative hypothesis is accepted:
+#### y = 4.59(x) - 2.39(x) -12.14(x) + 24.81
 
-####The final multi-regressional equation reflects a precise social model on which the unemployment grows on average by 4.59% each time the unqualified workers percentage rises by 1%, drops down by 2,39% each time the higher specialised workers increase by 1% and falls again down by 12.14% each time on average, median income per workers increase by 1 unit. 
+#### The final multi-regression equation reflects a precise social model on which the unemployment grows on average by 4.59% each time unqualified workers percentage rises by 1%, drops down by 2,39% each time the higher specialized workers increase by 1% and falls again down by 12.14% each time on average, median income per workers increase by 1 unit.
 
-
+#### Figure 13. Final social model – multiple linear regression with 3 independent variables
 ```{r}
-Final_model <- lm(indicators$Unemployment_Rate ~ indicators$Primary_education_Indicator + indicators$Higher_education_Indicator + indicators$Median_Incom_LOG10)
+Final_model <- lm(analysis_indicators$Unemployment_Rate ~ analysis_indicators$Primary_education_Indicator + analysis_indicators$Higher_education_Indicator + analysis_indicators$Median_Incom_LOG10)
 summary(Final_model)
 
 ```
 
-####As a final proof, the residuals standadized errors are plotted with predicted values in order to underpin possible suspect clustering around variables. 
+####As a final proof, in Figure 14, residuals standardized errors are plotted with predicted values in order to underpin possible suspect clustering around variables. The overall distribution seems to be casual and no patterns are happening.
 
+#### Figure 14. Standardized values vs Fitted values Plot
 ```{r}
 plot(Final_model, s=10)
 ```
 
 ##Local regression
 
-####The second phase of the study consists on join the findings of the multi-linear regression model and conduct a statistical spatial analysis with "local regression". The spatial dataframe shapefile used for the last part of this study derives from the data.gov.uk website and covers England and Wales (https://data.gov.uk/dataset/fa883558-22fb-4a1a-8529-cffdee47d500/lower-layer-super-output-area-lsoa-boundaries), the shapefile was clipped and merged with the data analyzed to this point.
+####The second phase of the study consists on joining the findings of the multi-linear regression model and conduct a statistical spatial analysis with “local regression”. The shapefile used for the last part of this study derives from the data.gov.uk website, it covers all LSOA areas in England and Wales. Once clipped on London perimeter, the shapefile was merged with the data analyzed to this point (data.gov.uk, 2018).
+
+
 
 ```{r}
 library(rgdal)
@@ -291,9 +292,10 @@ LondonLSOA$lat <- C[,2]
 
 
 ```{r}
+# The csv file is appended to the shapefile by the codes column
 
 library(tmaptools)
-LondonLSOA_Joined <- append_data(LondonLSOA,indicators, key.shp = "lsoa11cd", key.data ="Codes", ignore.duplicates = TRUE)
+LondonLSOA_Joined <- append_data(LondonLSOA,clean_data, key.shp = "lsoa11cd", key.data ="Codes", ignore.duplicates = TRUE)
 
 LondonLSOA_Joined
 
@@ -331,15 +333,12 @@ head(LondonLSOA_DF)
 
 ```
 
-#### The first phase on the spatial regression analysis is to calculate the spatial autocorrelation of the datased analysed so far. Moran's I method defines variables similarity to their sourroundings and possible spatial autocorelation may invalid the model analysed. Applied to spatial analysis, Morans's I is build on a weighted matrix that in this case is created from each LSOA centres and associated with the residual errors calculated within the model.
-
+#### Before starting the spatial regression analysis, is important to calculate the spatial autocorrelation between variables. Moran’s I test calculates the extent of similarity between LSOA variables and their surroundings as possible spatial autocorrelation may invalid the model. Applied to spatial analysis, Moran’s I is built on a weighted matrix that in this case is created from each LSOA center and associated with the residual errors calculated within the model.The folowing codes are adapted from Dennett (2018).
 
 ```{r}
 library(spdep)
 
-#####
-#First calculate the centroids of all Wards in London
-
+# The centroids of each LSOA areas are used for the matrix construction
 coordinLSOA <- coordinates(LondonLSOA_Joined)
 plot(coordinLSOA)+
 coord_equal() 
@@ -348,27 +347,26 @@ coord_equal()
 
 
 ```{r}
-#Now we need to generate a spatial weights matrix (remember from the lecture). We'll start with a simple binary matrix of queen's case neighbours
-#create a neighbours list
+#The spatial matrix is constructed using the original shapefile
 LSOA_nb <- poly2nb(LondonLSOA_Joined, queen=T)
-#plot them
+
+
 plot(LSOA_nb, coordinates(coordinLSOA), col="orange")
 
 ```
 
 
 ```{r}
-#create a spatial weights object from these weights
+#A spatial weighted object is created
 LSOA.lw <- nb2listw(LSOA_nb, style="C")
 head(LSOA.lw$neighbours)
 
 ```
 
-####Moran's I test indicates a value of -0.25 which means LSOA variables after regression are dispersed enough to treath a cluster formation. The residuals error in the maps show no particular autocorrelation between LSOA areas, the statistic model can be transposed to the spatial analysis. 
+#### Moran’s I test in Figure 16 indicates a value of -0.25 which means LSOA variables after regression are dispersed enough to form clusters. Residuals plot in the Figure 17 show no particular autocorrelation between LSOA areas.
 
+#### Figure 16. Moran’s I test
 ```{r}
-#moran's I test - this tells us whether we have clustered values (close to 1) or dispersed values (close to -1)
-#we will calculate for the densities rather than raw values
 
 
 I_LSOA_Global_Density <- moran.test(LondonLSOA_Joined@data$residuals, LSOA.lw)
@@ -377,7 +375,7 @@ I_LSOA_Global_Density
 ```
 
 
-
+#### Figure 17. Residuals Plot
 
 ```{r}
 
@@ -391,23 +389,43 @@ map3
 
 ```
 
-### Geographic weighted regression
 
-####Spatial anlysis continues with the local regression, next steps will be performed on ArcGIS software, as some technical difficulties were encountered when using the gwr function.
-####When proceding with the GWR analysis in Arcgis whereven, running a OLS analysis with the arctoolbox tools revealed that the model has a variable that shows "multicollinearity" above 7.5 which prevents the GWR algorithm to run, in this case the variance inflation factor (VIF) indicates higher education variables to have a value of 7.59, it was neccessary to exclude this variable from the model in order to further investigate the WGR.
 
+####When proceeding with the GWR analysis in ArcGIS, the model faced some critical issues, running an Ordinary Least Square analysis revealed that the model has one variable indicating “multicollinearity” above 7.5 which prevents the GWR algorithm to run, in this case the variance inflation factor (VIF) indicates higher education variables to have a value of 7.59, it was necessary to exclude this variable from the model in order to further investigate the WGR.
+
+#### Figure 18. WGR Coefficients
 
 ![](\\Users\\Bogdan\\Documents\\UCL\\MRes\\GIS\\Week9\\Assignment3\\WGR_social_indicators.PNG)
 
 
-### The two maps illustrate the respective coefficients having different impact in London LSOA areas. Median income coefficient has an overall negative impact on unemployment, in red are areas that on average pull down the unemployment between 5-6%. Primary Education impacts negatively the employment, for 1% increase the unemployment rises between 19-21% on the red areas.
+#### The two maps illustrate in Figure 18 the respective coefficients having different impact in London LSOA areas. Primary Education has a positive impact on unemployment, especially in the center of London, for 1% increase on primary educated workers the unemployment rises between 19-21% on the red areas. East London faces an opposite direction, surprisingly, primary education drops down the unemployment, this may be the effect of high level of unqualified workers in that area.
 
-##Discussion
+#### Median income coefficients have an overall negative impact on unemployment, meaning that on average it contributes to decrease unemployment. Figure 19 illustrates in red those areas that pull down the unemployment between 5-6%. The impact of higher households’ income is even more evident in East London, where the unemployment percentage would be affected between -15% and -21% each time the income values rise by 1 unit.
+
+##Conclusion and further directions
+
+####  This study has analyzed different socio-economic factors that may influence unemployment. Two levels of education between workers indicate a high degree of relationship but both inserted on the regression model suggests important levels of multicollinearity which in turn had negatively interfered with individual predictors. Primary education among workers have a huge positive impact on unemployment in the geographical center of London, meaning indirectly that LSOA areas with high needs for specialized workers suffer the injection of low qualified workers. Rising median households’ income from the other side has a negative impact on every LSOA areas, west and central London clearly show a softer impact compared to east side, where poorer areas can lose unemployment with higher wages.
+#### Findings reveal that unemployment in London’s LSOA areas is directly related to primary education incidence, but a more detailed dataset could give a wider picture about the negative impact on unemployment in east London. Median households’ income indicates a clear edge between west and east London, further analysis may also explain this division.
 
 
 
 
-##Conclusion
 
+
+
+## Bibliography
+
+
+
+#### Dennett, A. (2018). 'Spatial Inferential Statistics'. Available at:https://rpubs.com/adam_dennett/334459. (Accessed: 18 Dicember 2018).
+#### Borrell, C., Marí-Dell’olmo, M., Palència, L., Gotsens, M., Burström, B., Domínguez-Berjón, F., Rodríguez-Sanz, M., Dzúrová, D., Gandarillas, A., Hoffmann, R., Kovacs, K., Marinacci, C., Martikainen, P., Pikhart, H., Corman, D., Rosicova, K., Saez, M., Santana, P., Tarkiainen, L., Puigpinós, R., Morrison, J., Pasarín, M.I., Díez, È., (2014). ‘Socioeconomic inequalities in mortality in 16 European cities’. Scand J Public Health 42, pp. 245–254. doi: https://doi.org/10.1177/1403494814522556.
+#### Data.gov.uk (2018). Lower Layer Super Output Area (LSOA) boundaries. Available at: https://data.gov.uk/dataset/fa883558-22fb-4a1a-8529-cffdee47d500/lower-layer-super-output-area-lsoa-boundaries. (Accessed: 10 November 2018).
+#### INEQ-CITIES (2018). Available at:  https://www.ucl.ac.uk/ineqcities. (Accessed: 20 November 2018).
+#### London Datastore (2018) LSOA Atlas. Available at: https://data.london.gov.uk/dataset/lsoa-atlas. (Accessed: 10 November 2018).
+#### Mincer, J., (1991). ‘Education and Unemployment’. National Bureau of Economic Research, Cambridge, MA. doi: https://doi.org/10.3386/w3838.
+
+#### Nickell, S., (1979). ‘Education and Lifetime Patterns of Unemployment’. Journal of Political Economy 87, pp. S117–S131. doi: https://doi.org/10.1086/260825.
+#### OSN (2018). Census geography. Available at: https://www.ons.gov.uk/methodology/geography/ukgeographies/censusgeography. (Accessed: 17 November 2018).
+#### Zenou, Y., (2000). ‘Urban unemployment, agglomeration and transportation policies’. Journal of Public Economics 77, pp. 97–133. doi: https://doi.org/10.1016/S0047-2727(99)00083-3.
 
 
